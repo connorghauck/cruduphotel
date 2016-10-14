@@ -58,17 +58,19 @@ router.get('/', function(req, res){
 
 
 router.post('/', function(req, res){
+    console.log('hello');
     pool.connect(function(err, client, done){
         if (err) {
             res.sendStatus(500);
             done();
             return;
         }
-        client.query('INSERT INTO owner (firstName, lastName) VALUES ($1, $2) returning *;',
+        client.query('INSERT INTO owner (first_name, last_name) VALUES ($1, $2) returning *;',
         [req.body.firstName, req.body.lastName],
         function(err,result){
             done();
             if(err){
+                console.log(err);
                 res.sendStatus(500);
                 return;
             }
@@ -81,8 +83,8 @@ router.post('/', function(req, res){
 
 router.put('/:id', function(req, res){
     var id = req.params.id;
-    var firstName = req.body.firstName;
-    var lastName = req.body.lastName;
+    var firstName = req.body.first_name;
+    var lastName = req.body.last_name;
 
     pool.connect(function(err, client, done){
         try {

@@ -10,7 +10,7 @@ var pool = new pg.Pool(config);
 router.get('/:id', function(req, res){
     pool.connect(function(err, client, done){
         if(err){
-            console.log('Error connecting to the DB', err);
+            console.log('Error connecting to the DB 1get', err);
             res.sendStatus(500);
             done();
             return;
@@ -19,7 +19,7 @@ router.get('/:id', function(req, res){
         client.query('SELECT * FROM pets WHERE id = $1;', [req.params.id], function(err, result){
                 done();
                 if(err){
-                    console.log('Error querying the DB', err);
+                    console.log('Error querying the DB 1query', err);
                     res.sendStatus(500);
                     return;
                 }
@@ -44,7 +44,7 @@ router.get('/', function(req, res){
         client.query('SELECT * FROM pets;', function(err, result){
                 done();
                 if(err){
-                    console.log('Error querying the DB', err);
+                    console.log('Error querying the DB 2query', err);
                     res.sendStatus(500);
                     return;
                 }
@@ -64,8 +64,8 @@ router.post('/', function(req, res){
             done();
             return;
         }
-        client.query('INSERT INTO pets (petName, petBreed, petColor) VALUES ($1, $2, $3) returning *;',
-        [req.body.petName, req.body.petBreed, req.body.petColor],
+        client.query('INSERT INTO pets (owner_id, name, breed, color) VALUES ($1, $2, $3, $4) returning *;',
+        [req.body.ownerId, req.body.petName, req.body.petBreed, req.body.petColor],
         function(err,result){
             done();
             if(err){
@@ -92,17 +92,29 @@ router.put('/:id', function(req, res){
             res.sendStatus(500);
             return;
         }
+
+
         client.query('UPDATE pets SET petName=$1, petBreed=$2, petColor=$3 WHERE id=$4 RETURNING *;',
             [petName, petBreed, petColor, id],
             function(err, result){
+                done();
                 if (err){
-                    console.log('Error querying database', err);
+                    console.log('Error querying database 3query', err);
                     res.sendStatus(500);
                 } else {
-                res.send(result.rows);
-            }
-        });
+                client.query('SELECT * FROM owner JOIN pets ON owner.id = pets.owner_id RETURNING *;',
+                [owner.firstName, petName, petBreed, petColor, id],
+                function(err, result){
+                    if (err){
+                        console.log('Error joining pets', err);
+                        res.sendStatus(500);
+                    } else {
+                        res.send(result.rows);
 
+                    }
+            });
+        }
+});
         } finally {
             done();
         }
@@ -124,7 +136,7 @@ router.delete('/:id', function(req, res){
             [id],
             function(err, result){
                 if (err){
-                    console.log('Error querying the DB', err);
+                    console.log('Error querying the DB 4query', err);
                     res.sendStatus(500);
                     return;
                 }
