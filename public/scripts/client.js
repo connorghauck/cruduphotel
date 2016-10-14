@@ -1,6 +1,7 @@
 $(function(){
-    getOwners();
+    getPets();
 
+    getOwners();
     $('#owner-form').on('click', '.register', submitOwner);
     $('#pet-form').on('click', '.register', submitPet);
 });
@@ -52,7 +53,7 @@ function submitPet(event){
     console.log(petData);
     $.ajax({
         type: 'POST',
-        url: '/pets/',
+        url: '/pets',
         data: petData,
         success: getPets
     });
@@ -69,22 +70,23 @@ function getPets(){
 }
 
 
+
 function displayAll(response){
- console.log(response);
+ console.log('this is the response', response);
  var $list = $('#owner-list');
  $list.empty();
- response.forEach(function(owner, pets){
+ response.forEach(function(owners){
    var $li = $('<li></li>');
    var $form = $('<form></form>');
-   $form.append('<input type="text" name="firstName" value="' + owner.first_name + '"/>');
-   $form.append('<input type="text" name="lastName" value="' + owner.last_name + '"/>');
-   $form.append('<input type="text" name="petName" value="' + pets.name + '"/>');
-   $form.append('<input type="text" name="petBreed" value="' + pets.breed + '"/>');
-   $form.append('<input type="text" name="petColor" value="' + pets.color + '"/>');
+   $form.append('<input type="text" name="firstName" value="' + owners.first_name + '"/>');
+   $form.append('<input type="text" name="lastName" value="' + owners.last_name + '"/>');
+   $form.append('<input type="text" name="name" value="' + owners.name + '">');
+   $form.append('<input type="text" name="petBreed" value="' + owners.breed + '">');
+   $form.append('<input type="text" name="petColor" value="' + owners.color + '">');
 
    //make sure is jQuery element include $
    var $saveButton = $('<button class="save">Save</button>');
-   // $saveButton.data('id', pets.id); //stores data on the button
+   $saveButton.data('id', owners.owner_id); //stores data on the button
    $form.append($saveButton);
 
    var $deleteButton = $('<button class="delete">Delete</button>');
@@ -99,4 +101,20 @@ function displayAll(response){
    $list.append($li);
 
  });
+}
+
+function updatePets(){
+    event.preventDefault(); 
+
+    var $button = $(this);
+    var $form = $button.closest('form');
+
+    var data = $form.serialize();
+
+    $.ajax({
+        type: 'PUT',
+        url: '/pets/' + $button.data('id'),
+        data: data,
+        success: getPets
+    });
 }

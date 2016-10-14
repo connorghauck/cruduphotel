@@ -41,7 +41,7 @@ router.get('/', function(req, res){
             return;
         }
 
-        client.query('SELECT * FROM pets;', function(err, result){
+        client.query('SELECT * FROM owner LEFT JOIN pets ON owner.id = pets.owner_id;', function(err, result){
                 done();
                 if(err){
                     console.log('Error querying the DB 2query', err);
@@ -51,6 +51,7 @@ router.get('/', function(req, res){
 
                 console.log('Got rows from the DB: ',result.rows);
                 res.send(result.rows);
+
         });
 
     });
@@ -81,6 +82,8 @@ router.post('/', function(req, res){
 
 router.put('/:id', function(req, res){
     var id = req.params.id;
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
     var petName = req.body.petName;
     var petBreed = req.body.petBreed;
     var petColor = req.body.petColor;
@@ -94,27 +97,19 @@ router.put('/:id', function(req, res){
         }
 
 
-        client.query('UPDATE pets SET petName=$1, petBreed=$2, petColor=$3 WHERE id=$4 RETURNING *;',
-            [petName, petBreed, petColor, id],
+        client.query('UPDATE pets SET first_name=$1, last_name=$2, name=$3, breed=$4, color=$5 WHERE id=$6 RETURNING *;',
+            [req.body.firstName, req.body.lastName, req.body.petName, req.body.petBreed, req.body.petColor, id],
             function(err, result){
-                done();
                 if (err){
                     console.log('Error querying database 3query', err);
                     res.sendStatus(500);
                 } else {
-                client.query('SELECT * FROM owner JOIN pets ON owner.id = pets.owner_id RETURNING *;',
-                [owner.firstName, petName, petBreed, petColor, id],
-                function(err, result){
-                    if (err){
-                        console.log('Error joining pets', err);
-                        res.sendStatus(500);
-                    } else {
+
                         res.send(result.rows);
 
                     }
             });
-        }
-});
+
         } finally {
             done();
         }
